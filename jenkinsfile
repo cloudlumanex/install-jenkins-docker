@@ -3,18 +3,27 @@ pipeline {
 
     stages {
         stage('Build') {
-            agent{
-                docker{
+            agent {
+                docker {
                     image 'node:alpine'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
+                    echo "Running inside Node.js Alpine container..."
                     ls -la
                     node --version
                     npm --version
-                    npm ci
+
+                    # Use npm install if package-lock.json is missing
+                    if [ -f package-lock.json ]; then
+                        npm ci
+                    else
+                        echo "package-lock.json not found, running npm install..."
+                        npm install
+                    fi
+
                     npm run build
                     ls -la
                 '''
